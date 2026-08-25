@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=离线背单词
+Comment=Offline vocabulary learning
+Exec=/usr/bin/en-word
+Icon=en-word
+Terminal=false
+Categories=Education;
+StartupWMClass=EnWord

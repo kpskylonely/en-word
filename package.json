@@ -1,0 +1,33 @@
+{
+  "name": "en-word",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "npm run db:ensure && vite",
+    "dev:api": "python3 -m backend.main --dev",
+    "dev:all": "npm run db:ensure && sh -c 'python3 -m backend.main --dev & vite'",
+    "build": "npm run db:ensure && vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "start": "python3 -m backend.main",
+    "db:ensure": "python3 scripts/ensure_db.py",
+    "db:sample": "python3 scripts/create_sample_db.py",
+    "db:import": "python3 scripts/import_dictionary.py",
+    "db:download": "bash scripts/download_dictionary.sh",
+    "test:features": "python3 scripts/test_features.py",
+    "test:backend": "python3 -m unittest backend.test_db -v",
+    "pack:mac": "bash scripts/build_mac.sh",
+    "pack:kylin": "bash scripts/build_kylin.sh",
+    "pack:kylin:docker": "bash scripts/build_kylin_docker.sh"
+  },
+  "dependencies": {
+    "vue": "^3.5.13",
+    "vue-router": "^4.6.4"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "typescript": "~5.6.2",
+    "vite": "^6.0.3",
+    "vue-tsc": "^2.1.10"
+  }
+}
