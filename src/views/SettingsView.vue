@@ -3,6 +3,7 @@ import { onMounted, ref } from "vue";
 import { RouterLink } from "vue-router";
 import { api } from "../api";
 import { useAppearanceSettings } from "../stores/appearance";
+import { stealthExitShortcutLabel } from "../composables/useStealthShortcut";
 import { useStudySettings } from "../stores/settings";
 import type { BookStudyStats } from "../types";
 
@@ -15,6 +16,8 @@ const {
   setAlwaysOnTop,
   APPEARANCE_LIMITS,
 } = useAppearanceSettings();
+
+const stealthExitHint = stealthExitShortcutLabel();
 
 const studiedBooks = ref<BookStudyStats[]>([]);
 const selectedResetBookId = ref("");
@@ -202,6 +205,7 @@ onMounted(loadStudiedBooks);
 
     <p class="book-meta appearance-note">
       透明窗口与置顶需使用桌面版（npm start）。浏览器开发模式仅 UI 半透明。
+      透明模式退出：{{ stealthExitHint }}，或点击右上角「退出」。
     </p>
 
     <h2 class="section-title">各模式词量</h2>

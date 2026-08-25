@@ -1,13 +1,37 @@
 import { watch } from "vue";
 import { useAppearanceSettings } from "../stores/appearance";
 
+function markDesktopShell() {
+  document.documentElement.classList.add("desktop-shell");
+}
+
 function invokeDesktopStealth(enabled: boolean, alwaysOnTop: boolean) {
   const api = window.pywebview?.api;
   if (!api?.set_stealth_mode) return;
 
-  void api.set_stealth_mode(enabled, alwaysOnTop).catch(() => {
-    /* desktop API unavailable */
-  });
+  const apply = () => {
+    void api.set_stealth_mode(enabled, alwaysOnTop).catch(() => {
+      /* desktop API unavailable */
+    });
+  };
+
+  apply();
+  window.setTimeout(apply, 120);
+  window.setTimeout(apply, 400);
+}
+
+function initDesktopWindow(stealthMode: boolean) {
+  const api = window.pywebview?.api;
+  if (!api?.init_desktop_window) return;
+
+  const apply = () => {
+    void api.init_desktop_window(stealthMode).catch(() => {
+      /* desktop API unavailable */
+    });
+  };
+
+  apply();
+  window.setTimeout(apply, 120);
 }
 
 function applyAppearanceClasses(
@@ -20,13 +44,19 @@ function applyAppearanceClasses(
   root.style.setProperty("--stealth-surface-opacity", String(stealthOpacity));
 
   if (window.pywebview?.api) {
+    markDesktopShell();
+    initDesktopWindow(stealthMode);
     invokeDesktopStealth(stealthMode, alwaysOnTop);
     return;
   }
 
   window.addEventListener(
     "pywebviewready",
-    () => invokeDesktopStealth(stealthMode, alwaysOnTop),
+    () => {
+      markDesktopShell();
+      initDesktopWindow(stealthMode);
+      invokeDesktopStealth(stealthMode, alwaysOnTop);
+    },
     { once: true },
   );
 }

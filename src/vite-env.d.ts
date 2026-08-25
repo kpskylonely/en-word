@@ -1,6 +1,9 @@
 /// <reference types="vite/client" />
 
 interface PyWebViewApi {
+  init_desktop_window: (
+    stealthMode: boolean,
+  ) => Promise<{ ok: boolean; supported: boolean }>;
   set_stealth_mode: (
     enabled: boolean,
     alwaysOnTop?: boolean,

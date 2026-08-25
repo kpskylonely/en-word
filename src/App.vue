@@ -1,12 +1,20 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from "vue-router";
 import { useAppearance } from "./composables/useAppearance";
+import {
+  stealthExitShortcutLabel,
+  useStealthShortcut,
+} from "./composables/useStealthShortcut";
 import { useAppearanceSettings } from "./stores/appearance";
 import { useBookStore } from "./stores/book";
 
 const { currentBook } = useBookStore();
 const { appearance } = useAppearance();
 const { setStealthMode } = useAppearanceSettings();
+
+useStealthShortcut();
+
+const stealthExitHint = stealthExitShortcutLabel();
 </script>
 
 <template>
@@ -23,18 +31,18 @@ const { setStealthMode } = useAppearanceSettings();
       </nav>
     </header>
 
-    <div v-if="appearance.stealthMode" class="stealth-bar">
-      <nav class="stealth-nav">
+    <div v-if="appearance.stealthMode" class="stealth-float">
+      <span class="stealth-float-hint">{{ stealthExitHint }}</span>
+      <nav class="stealth-float-nav">
+        <RouterLink to="/">选书</RouterLink>
         <RouterLink to="/study">学习</RouterLink>
         <RouterLink to="/flashcard">闪卡</RouterLink>
-        <RouterLink to="/quiz/en_zh">英中</RouterLink>
-        <RouterLink to="/quiz/zh_en">中英</RouterLink>
         <RouterLink to="/settings">设置</RouterLink>
       </nav>
-      <button class="stealth-exit" type="button" @click="setStealthMode(false)">退出透明</button>
+      <button class="stealth-exit" type="button" @click="setStealthMode(false)">退出</button>
     </div>
 
-    <main>
+    <main :class="{ 'stealth-main': appearance.stealthMode }">
       <div
         v-if="currentBook && !appearance.stealthMode"
         class="page-subtitle page"

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import socket
 import sys
 import threading
 import time
@@ -13,6 +14,18 @@ from backend.config import ensure_user_db, static_dir
 from backend.paths import is_frozen, resource_root
 
 DEFAULT_PORT = 8765
+
+
+def pick_port(preferred: int = DEFAULT_PORT) -> int:
+    for port in range(preferred, preferred + 20):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            try:
+                sock.bind(("127.0.0.1", port))
+            except OSError:
+                continue
+            return port
+    raise RuntimeError(f"No free port found near {preferred}")
 
 
 def run_server(port: int, assets: Path | None) -> None:
@@ -42,9 +55,10 @@ def main() -> None:
         print("dist/ not found. Run: npm run build", file=sys.stderr)
         sys.exit(1)
 
+    port = pick_port(args.port)
     server = threading.Thread(
         target=run_server,
-        args=(args.port, assets),
+        args=(port, assets),
         daemon=True,
     )
     server.start()
@@ -56,16 +70,19 @@ def main() -> None:
 
     desktop_api = DesktopApi()
     use_transparent = sys.platform in ("darwin", "linux")
+    use_frameless = sys.platform in ("darwin", "linux", "win32")
 
     window = webview.create_window(
         "离线背单词",
-        f"http://127.0.0.1:{args.port}",
+        f"http://127.0.0.1:{port}",
         width=960,
         height=680,
         min_size=(800, 560),
         js_api=desktop_api,
+        frameless=use_frameless,
+        easy_drag=False,
         transparent=use_transparent,
-        background_color="#01000000" if use_transparent else "#FFF5F7FA",
+        background_color="#000000" if use_transparent else "#F5F7FA",
     )
     desktop_api.bind_window(window)
     webview.start()

@@ -380,6 +380,25 @@ input {
   justify-content: space-between;
 }
 
+html.desktop-shell .topbar {
+  padding: 36px 24px 12px 78px;
+  -webkit-app-region: drag;
+}
+
+html.desktop-shell .topbar-title,
+html.desktop-shell .topbar-nav,
+html.desktop-shell .topbar-nav a {
+  -webkit-app-region: no-drag;
+}
+
+html.desktop-shell main {
+  -webkit-app-region: no-drag;
+}
+
+html.desktop-shell .page-title {
+  -webkit-app-region: drag;
+}
+
 .topbar-title {
   font-size: 18px;
   font-weight: 600;
@@ -611,42 +630,65 @@ input {
   margin: 0 0 20px;
 }
 
-.stealth-bar {
+.stealth-float {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  z-index: 100;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 4px 12px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  background: rgba(245, 245, 245, 0.82);
-}
-
-.stealth-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   font-size: 12px;
-  color: #333;
+  -webkit-app-region: no-drag;
 }
 
-.stealth-nav a {
-  color: #333;
+.stealth-float-nav {
+  display: flex;
+  gap: 8px;
 }
 
-.stealth-nav a.router-link-active {
+.stealth-float-hint {
+  color: #666;
+  font-size: 11px;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.stealth-float-nav a {
+  color: #444;
+  text-decoration: none;
+}
+
+.stealth-float-nav a.router-link-active {
   font-weight: 600;
-  text-decoration: underline;
+  color: #000;
 }
 
 .stealth-exit {
   appearance: none;
   border: 1px solid #ccc;
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.85);
   color: #333;
-  border-radius: 4px;
+  border-radius: 3px;
   padding: 2px 8px;
   font-size: 12px;
   cursor: pointer;
+}
+
+html.stealth-mode .topbar {
+  display: none !important;
+}
+
+html.stealth-mode .stealth-main {
+  /* Main content stays clickable; drag only from .page-title or .topbar. */
+}
+
+html.stealth-mode .page-title {
+  -webkit-app-region: drag;
 }
 
 html.stealth-mode,
@@ -664,7 +706,7 @@ html.stealth-mode {
 
 html.stealth-mode .page {
   max-width: 780px;
-  padding: 18px 24px 24px;
+  padding: 20px 24px 24px;
 }
 
 html.stealth-mode .page-title {
@@ -754,8 +796,4 @@ html.stealth-mode .book-tag {
 
 html.stealth-mode .book-last-study {
   color: #555;
-}
-
-html.stealth-mode .stealth-bar {
-  background: rgba(245, 245, 245, var(--stealth-surface-opacity));
 }

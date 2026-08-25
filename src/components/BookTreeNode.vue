@@ -18,6 +18,7 @@ const props = defineProps<{
 
 defineEmits<{
   select: [book: Book];
+  open: [bookId: string];
 }>();
 
 const expanded = ref(false);
@@ -103,6 +104,7 @@ function lastStudyText(value: string | null | undefined) {
         studied: progress && progress.learned_words > 0,
       }"
       @click="$emit('select', node)"
+      @dblclick="$emit('open', node.id)"
     >
       <div class="book-item-main">
         <div class="book-item-row">
@@ -148,6 +150,7 @@ function lastStudyText(value: string | null | undefined) {
           :expand-all="expandAll"
           :progress-map="progressMap"
           @select="$emit('select', $event)"
+          @open="$emit('open', $event)"
         />
       </ul>
     </div>

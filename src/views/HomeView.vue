@@ -171,6 +171,7 @@ onMounted(async () => {
           :expand-all="expandAll"
           :progress-map="progressMap"
           @select="selectBook"
+          @open="continueStudy"
         />
       </ul>
       <div v-if="filteredRoots.length === 0" class="empty">没有匹配的词书</div>
