@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import { onMounted, ref } from "vue";
 import { RouterLink } from "vue-router";
+import { api } from "../api";
 import { useAppearanceSettings } from "../stores/appearance";
 import { useStudySettings } from "../stores/settings";
+import type { BookStudyStats } from "../types";
 
 const { settings, resetSettings, updateSetting, DEFAULT_SETTINGS, SETTINGS_LIMITS } =
   useStudySettings();
@@ -12,6 +15,13 @@ const {
   setAlwaysOnTop,
   APPEARANCE_LIMITS,
 } = useAppearanceSettings();
+
+const studiedBooks = ref<BookStudyStats[]>([]);
+const selectedResetBookId = ref("");
+const progressLoading = ref(true);
+const resetting = ref(false);
+const resetMessage = ref("");
+const resetError = ref("");
 
 const modeItems = [
   {
@@ -56,6 +66,80 @@ function onOpacityInput(event: Event) {
   if (Number.isNaN(value)) return;
   setStealthOpacity(value);
 }
+
+async function loadStudiedBooks() {
+  progressLoading.value = true;
+  resetError.value = "";
+  try {
+    studiedBooks.value = await api.getStudiedBooksStats();
+    if (
+      selectedResetBookId.value &&
+      !studiedBooks.value.some((book) => book.id === selectedResetBookId.value)
+    ) {
+      selectedResetBookId.value = "";
+    }
+    if (!selectedResetBookId.value && studiedBooks.value.length > 0) {
+      selectedResetBookId.value = studiedBooks.value[0].id;
+    }
+  } catch (e) {
+    resetError.value = String(e);
+  } finally {
+    progressLoading.value = false;
+  }
+}
+
+function selectedBookName() {
+  return studiedBooks.value.find((book) => book.id === selectedResetBookId.value)?.name ?? "该词书";
+}
+
+async function clearBookProgress() {
+  if (!selectedResetBookId.value || resetting.value) return;
+  if (
+    !window.confirm(
+      `确定清除「${selectedBookName()}」的全部学习记录吗？\n\n包括复习进度、错词本和统计历史。此操作不可恢复。`,
+    )
+  ) {
+    return;
+  }
+  resetting.value = true;
+  resetMessage.value = "";
+  resetError.value = "";
+  try {
+    await api.resetBookProgress(selectedResetBookId.value);
+    resetMessage.value = `已清除「${selectedBookName()}」的学习记录。`;
+    await loadStudiedBooks();
+  } catch (e) {
+    resetError.value = String(e);
+  } finally {
+    resetting.value = false;
+  }
+}
+
+async function clearAllProgress() {
+  if (resetting.value) return;
+  if (
+    !window.confirm(
+      "确定清除所有词书的学习记录吗？\n\n包括复习进度、错词本和统计历史。此操作不可恢复。",
+    )
+  ) {
+    return;
+  }
+  resetting.value = true;
+  resetMessage.value = "";
+  resetError.value = "";
+  try {
+    await api.resetAllProgress();
+    resetMessage.value = "已清除全部学习记录。";
+    selectedResetBookId.value = "";
+    await loadStudiedBooks();
+  } catch (e) {
+    resetError.value = String(e);
+  } finally {
+    resetting.value = false;
+  }
+}
+
+onMounted(loadStudiedBooks);
 </script>
 
 <template>
@@ -139,6 +223,59 @@ function onOpacityInput(event: Event) {
           <span class="book-meta">词</span>
         </div>
       </div>
+    </div>
+
+    <h2 class="section-title">学习数据</h2>
+    <div class="card settings-list">
+      <p class="book-meta progress-reset-desc">
+        清除学习记录会重置复习进度、错词本和统计数据，词库内容不会被删除。
+      </p>
+
+      <div v-if="progressLoading" class="empty">加载已学词书中...</div>
+      <template v-else>
+        <div class="setting-item">
+          <div class="setting-info">
+            <strong>清除指定词书</strong>
+            <span class="book-meta">仅清除所选词书的学习记录</span>
+          </div>
+          <div class="setting-control progress-reset-control">
+            <select
+              v-model="selectedResetBookId"
+              class="input-field progress-reset-select"
+              :disabled="studiedBooks.length === 0 || resetting"
+            >
+              <option v-if="studiedBooks.length === 0" value="">暂无已学词书</option>
+              <option v-for="book in studiedBooks" :key="book.id" :value="book.id">
+                {{ book.name }}
+              </option>
+            </select>
+            <button
+              class="btn btn-danger btn-sm"
+              :disabled="!selectedResetBookId || resetting"
+              @click="clearBookProgress"
+            >
+              清除该词书
+            </button>
+          </div>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <strong>清除全部记录</strong>
+            <span class="book-meta">一键清空所有词书的学习数据</span>
+          </div>
+          <button
+            class="btn btn-danger btn-sm"
+            :disabled="studiedBooks.length === 0 || resetting"
+            @click="clearAllProgress"
+          >
+            清除全部
+          </button>
+        </div>
+      </template>
+
+      <p v-if="resetMessage" class="book-meta progress-reset-msg">{{ resetMessage }}</p>
+      <p v-if="resetError" class="book-meta progress-reset-error">{{ resetError }}</p>
     </div>
 
     <div class="toolbar">

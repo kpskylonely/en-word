@@ -84,4 +84,6 @@ export const api = {
   getStatsOverview: () => request<StatsOverview>("/api/stats/overview"),
   resetBookProgress: (bookId: string) =>
     request<void>(`/api/books/${bookId}/reset`, { method: "POST" }),
+  resetAllProgress: () =>
+    request<void>("/api/progress/reset", { method: "POST" }),
 };

@@ -53,6 +53,18 @@ class BackendTests(unittest.TestCase):
         overview = self.db.get_stats_overview()
         self.assertGreaterEqual(overview["studied_books"], 1)
 
+    def test_reset_all_progress(self) -> None:
+        book_id = self._sample_book_id()
+        self.db.reset_book_progress(book_id)
+        questions = self.db.get_quiz_questions(book_id, "en_zh", 1)
+        self.db.submit_review(questions[0]["word_id"], book_id, "en_zh", "wrong")
+        self.assertGreater(self.db.get_stats(book_id)["learned_words"], 0)
+
+        self.db.reset_all_progress()
+        self.assertEqual(self.db.get_stats(book_id)["learned_words"], 0)
+        self.assertEqual(self.db.get_stats_overview()["studied_books"], 0)
+        self.assertEqual(self.db.get_all_wrong_words(), [])
+
     def _sample_book_id(self) -> str:
         def first_leaf(nodes: list[dict]) -> str | None:
             for node in nodes:

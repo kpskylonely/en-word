@@ -9,8 +9,10 @@ const router = useRouter();
 const { currentBook, stats, setStats } = useBookStore();
 const { settings } = useStudySettings();
 const loading = ref(true);
+const resetting = ref(false);
 
 const bookId = computed(() => currentBook.value?.id ?? "");
+const hasProgress = computed(() => (stats.value?.learned_words ?? 0) > 0);
 
 onMounted(async () => {
   if (!currentBook.value) {
@@ -23,6 +25,24 @@ onMounted(async () => {
     loading.value = false;
   }
 });
+
+async function clearCurrentBookProgress() {
+  if (!currentBook.value || resetting.value || !hasProgress.value) return;
+  if (
+    !window.confirm(
+      `确定清除「${currentBook.value.name}」的全部学习记录吗？\n\n包括复习进度、错词本和统计历史。此操作不可恢复。`,
+    )
+  ) {
+    return;
+  }
+  resetting.value = true;
+  try {
+    await api.resetBookProgress(bookId.value);
+    setStats(await api.getStats(bookId.value));
+  } finally {
+    resetting.value = false;
+  }
+}
 </script>
 
 <template>
@@ -79,6 +99,16 @@ onMounted(async () => {
         <h3>本书错词本</h3>
         <p>当前词书的错词 · 选择方式复习</p>
       </RouterLink>
+    </div>
+
+    <div v-if="hasProgress" class="toolbar study-reset-toolbar">
+      <button
+        class="btn btn-danger btn-sm"
+        :disabled="resetting"
+        @click="clearCurrentBookProgress"
+      >
+        清除本书学习记录
+      </button>
     </div>
   </div>
 </template>

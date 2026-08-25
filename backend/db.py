@@ -578,3 +578,8 @@ class Database:
         self.conn.execute("DELETE FROM user_progress WHERE book_id = ?", (book_id,))
         self.conn.execute("DELETE FROM review_logs WHERE book_id = ?", (book_id,))
         self.conn.commit()
+
+    def reset_all_progress(self) -> None:
+        self.conn.execute("DELETE FROM user_progress")
+        self.conn.execute("DELETE FROM review_logs")
+        self.conn.commit()

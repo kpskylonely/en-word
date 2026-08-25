@@ -112,6 +112,11 @@ def create_app(static_dir: Optional[Path] = None) -> FastAPI:
         db.reset_book_progress(book_id)
         return {"ok": True}
 
+    @app.post("/api/progress/reset")
+    def reset_all_progress():
+        db.reset_all_progress()
+        return {"ok": True}
+
     if static_dir and static_dir.exists():
         app.mount("/", StaticFiles(directory=str(static_dir), html=True), name="static")
 

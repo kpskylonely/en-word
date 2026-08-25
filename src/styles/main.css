@@ -475,6 +475,42 @@ input {
   text-align: center;
 }
 
+.progress-reset-desc {
+  margin: 0 0 4px;
+}
+
+.progress-reset-control {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.progress-reset-select {
+  min-width: 180px;
+  max-width: 240px;
+}
+
+.progress-reset-msg {
+  margin: 8px 0 0;
+  color: #059669;
+}
+
+.progress-reset-error {
+  margin: 8px 0 0;
+  color: #dc2626;
+}
+
+.study-reset-toolbar {
+  margin-top: 16px;
+  justify-content: flex-end;
+}
+
+.stats-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  white-space: nowrap;
+}
+
 .settings-link {
   margin-left: 8px;
   color: #2563eb;

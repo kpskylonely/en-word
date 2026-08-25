@@ -12,8 +12,18 @@ const overview = ref<StatsOverview | null>(null);
 const books = ref<BookStudyStats[]>([]);
 const loading = ref(true);
 const error = ref("");
+const resettingBookId = ref("");
 
 const hasData = computed(() => books.value.length > 0);
+
+async function loadStats() {
+  const [overviewData, bookStats] = await Promise.all([
+    api.getStatsOverview(),
+    api.getStudiedBooksStats(),
+  ]);
+  overview.value = overviewData;
+  books.value = bookStats;
+}
 
 async function openBook(bookId: string) {
   const book = await api.getBook(bookId);
@@ -23,14 +33,30 @@ async function openBook(bookId: string) {
   }
 }
 
+async function clearBookProgress(book: BookStudyStats) {
+  if (resettingBookId.value) return;
+  if (
+    !window.confirm(
+      `确定清除「${book.name}」的全部学习记录吗？\n\n包括复习进度、错词本和统计历史。此操作不可恢复。`,
+    )
+  ) {
+    return;
+  }
+  resettingBookId.value = book.id;
+  error.value = "";
+  try {
+    await api.resetBookProgress(book.id);
+    await loadStats();
+  } catch (e) {
+    error.value = String(e);
+  } finally {
+    resettingBookId.value = "";
+  }
+}
+
 onMounted(async () => {
   try {
-    const [overviewData, bookStats] = await Promise.all([
-      api.getStatsOverview(),
-      api.getStudiedBooksStats(),
-    ]);
-    overview.value = overviewData;
-    books.value = bookStats;
+    await loadStats();
   } catch (e) {
     error.value = String(e);
   } finally {
@@ -94,8 +120,15 @@ onMounted(async () => {
               <td>{{ book.accuracy_rate }}%</td>
               <td>{{ book.error_rate }}%</td>
               <td>{{ formatStudyDate(book.last_study_at) || "—" }}</td>
-              <td>
+              <td class="stats-actions">
                 <button class="btn btn-sm" @click="openBook(book.id)">继续学习</button>
+                <button
+                  class="btn btn-danger btn-sm"
+                  :disabled="resettingBookId === book.id"
+                  @click="clearBookProgress(book)"
+                >
+                  清除记录
+                </button>
               </td>
             </tr>
           </tbody>
