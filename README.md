@@ -56,6 +56,14 @@ npm start
 
 打包需要 **Python 3.9+** 及依赖（脚本会自动选择可用解释器，也可手动指定 `PYTHON=/usr/bin/python3`）。
 
+PyInstaller 必须在对应操作系统上构建，无法交叉编译。本地可打当前平台的包；**三平台一键打包**请用 GitHub Actions（见下方）。
+
+| 平台 | 本地命令 | 产物 |
+|------|----------|------|
+| macOS | `npm run pack:mac` | `.dmg` |
+| Linux / 麒麟 | `npm run pack:kylin` | `.deb` |
+| Windows | `npm run pack:win` | `EnWord.exe` + `.zip` |
+
 ### macOS（.dmg）
 
 在本机执行：
@@ -104,12 +112,27 @@ sudo apt -f install   # 如有依赖缺失
 
 > PyInstaller 无法从 Mac 直接交叉编译 Linux 程序，因此纯本地打包必须在 Linux 上进行；Mac 上请用 Docker 方案。
 
-**方式 C：GitHub Actions 自动打包**
+### Windows（.exe）
 
-推送到 `main` / `master` 后，会在 `ubuntu-latest` 上自动构建 `.deb`，可在 Actions 页面的 **Artifacts** 下载：
+在 Windows 本机执行：
 
-- 工作流：`.github/workflows/build-kylin-deb.yml`
-- 推送标签 `v*`（如 `v0.1.0`）时，还会自动创建 GitHub Release 并附上 `.deb`
+```bash
+npm run pack:win
+```
+
+产物：
+
+- `release/EnWord/EnWord.exe` — 主程序（同目录含依赖文件）
+- `release/EnWord-0.1.0-win.zip` — 完整压缩包，解压后运行 `EnWord.exe`
+
+系统需已安装 [WebView2 运行时](https://developer.microsoft.com/microsoft-edge/webview2/)（Windows 10/11 通常已自带）。
+
+### GitHub Actions 三平台自动打包
+
+推送到 `main` / `master` 后，会并行构建 **`.deb` + `.dmg` + `.zip`（含 `.exe`）**，在 Actions 页面的 **Artifacts** 下载：
+
+- 工作流：`.github/workflows/build-release.yml`
+- 推送标签 `v*`（如 `v0.1.0`）时，还会自动创建 GitHub Release 并附上全部安装包
 
 ```bash
 git tag v0.1.0

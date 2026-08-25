@@ -18,7 +18,8 @@
     "test:backend": "python3 -m unittest backend.test_db -v",
     "pack:mac": "bash scripts/build_mac.sh",
     "pack:kylin": "bash scripts/build_kylin.sh",
-    "pack:kylin:docker": "bash scripts/build_kylin_docker.sh"
+    "pack:kylin:docker": "bash scripts/build_kylin_docker.sh",
+    "pack:win": "bash scripts/build_win.sh"
   },
   "dependencies": {
     "vue": "^3.5.13",
