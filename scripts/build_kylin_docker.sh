@@ -5,6 +5,11 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
 IMAGE="${ENWORD_KYLIN_IMAGE:-enword-kylin-builder}"
+ARCH="${ARCH:-amd64}"
+case "$ARCH" in
+  arm64) PLATFORM="${ENWORD_DOCKER_PLATFORM:-linux/arm64}" ;;
+  *) PLATFORM="${ENWORD_DOCKER_PLATFORM:-linux/amd64}" ;;
+esac
 
 if [[ ! -f "$ROOT/data/dictionary.db" ]]; then
   echo "Missing data/dictionary.db. Run: npm run db:download" >&2
@@ -16,16 +21,17 @@ if ! command -v docker >/dev/null 2>&1; then
   exit 1
 fi
 
-echo "==> Building Linux amd64 builder image..."
-docker build --platform linux/amd64 \
+echo "==> Building Linux ${ARCH} builder image (${PLATFORM})..."
+docker build --platform "$PLATFORM" \
   -f "$ROOT/packaging/docker/Dockerfile.kylin-build" \
   -t "$IMAGE" \
   "$ROOT"
 
-echo "==> Building Kylin/Ubuntu .deb inside Docker (linux/amd64)..."
-docker run --rm --platform linux/amd64 \
+echo "==> Building Kylin/Ubuntu .deb inside Docker (${PLATFORM}, ${ARCH})..."
+docker run --rm --platform "$PLATFORM" \
   -v "$ROOT:/app" \
   -w /app \
+  -e ARCH="$ARCH" \
   "$IMAGE" \
   bash -lc '
     set -euo pipefail

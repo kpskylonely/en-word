@@ -3,7 +3,7 @@
 基于 [DictionaryData](https://github.com/LinXueyuanStdio/DictionaryData) 的跨平台离线背单词应用。
 
 - **技术栈**：Python (FastAPI) + Vue 3 + SQLite + PyWebView
-- **平台**：macOS、麒麟 V10（x86_64）
+- **平台**：macOS、麒麟 V10（ARM64 / x86_64）、Windows
 - **特点**：完全离线，适合内网环境
 
 ## 学习模式
@@ -79,26 +79,31 @@ npm run pack:mac
 
 安装：打开 DMG，将 **EnWord** 拖入「应用程序」文件夹。首次打开若提示未验证开发者，请右键 → 打开。
 
-### 麒麟 V10 / Linux（.deb，x86_64）
+### 麒麟 V10 / Linux（.deb，ARM64 / x86_64）
 
-**方式 A：在 Mac 上通过 Docker 打包（推荐）**
+**方式 A：GitHub Actions 自动打包（推荐）**
 
-需要安装 [Docker Desktop](https://www.docker.com/products/docker-desktop/)。会在 `linux/amd64` 容器里构建，产物适用于麒麟 V10 x86：
+推送到 `main` 后，CI 会在 `ubuntu-24.04-arm` 上原生构建 **ARM64** `.deb`，并在 Releases / Artifacts 中提供下载。
+
+**方式 B：在 Mac 上通过 Docker 打包**
+
+需要安装 [Docker Desktop](https://www.docker.com/products/docker-desktop/)。默认构建 `linux/amd64`；ARM64 可指定：
 
 ```bash
 npm run pack:kylin:docker
+# ARM64 示例：
+# ENWORD_DOCKER_PLATFORM=linux/arm64 ARCH=arm64 npm run pack:kylin:docker
 ```
 
-首次构建镜像较慢；Apple 芯片 Mac 会通过 QEMU 模拟 x86，请耐心等待。
-
-**方式 B：在麒麟 / Ubuntu 本机打包**
+**方式 C：在麒麟 / Ubuntu 本机打包**
 
 ```bash
 npm run pack:kylin
 ```
 
-产物：
+产物（架构随本机自动识别，也可 `ARCH=arm64 npm run pack:kylin`）：
 
+- `release/en-word_0.1.0_arm64.deb`
 - `release/en-word_0.1.0_amd64.deb`
 
 安装：

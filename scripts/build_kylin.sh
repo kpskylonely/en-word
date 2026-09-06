@@ -8,7 +8,15 @@ source "$ROOT/scripts/pick_python.sh"
 PY="$(pick_python)"
 
 VERSION="$(node -p "require('./package.json').version")"
-ARCH="${ARCH:-amd64}"
+if [[ -z "${ARCH:-}" ]]; then
+  if command -v dpkg >/dev/null 2>&1; then
+    ARCH="$(dpkg --print-architecture)"
+  elif [[ "$(uname -m)" == "aarch64" ]]; then
+    ARCH="arm64"
+  else
+    ARCH="amd64"
+  fi
+fi
 RELEASE_DIR="$ROOT/release"
 PYI_WORK="$ROOT/build/pyinstaller"
 PYI_CACHE="$ROOT/build/pyinstaller-cache"

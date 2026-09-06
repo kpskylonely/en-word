@@ -1,5 +1,5 @@
-# Build Kylin/Ubuntu amd64 .deb packages from macOS via Docker.
-FROM --platform=linux/amd64 node:20-bookworm-slim
+# Build Kylin/Ubuntu .deb packages from macOS via Docker (amd64 or arm64).
+FROM node:20-bookworm-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
