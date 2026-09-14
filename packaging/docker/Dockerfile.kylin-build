@@ -1,25 +1,31 @@
-# Build .deb against glibc 2.31 (Ubuntu 20.04) for Kylin V10 / older ARM distros.
-FROM ubuntu:20.04
+# Build .deb against glibc 2.31 (Ubuntu 20.04 / focal) for Kylin V10.
+FROM python:3.10-focal
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
-ENV PYTHON=python3.10
+ENV PYTHON=python
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-      ca-certificates curl gnupg software-properties-common \
-    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && add-apt-repository -y ppa:deadsnakes/ppa \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends \
-      nodejs \
-      python3.10 python3.10-venv python3.10-dev \
+      ca-certificates curl xz-utils \
       build-essential pkg-config \
       libgirepository1.0-dev libcairo2-dev libpango1.0-dev \
       gir1.2-gtk-3.0 gir1.2-webkit2-4.0 \
       libwebkit2gtk-4.0-37 libgtk-3-0 libnotify4 dpkg-dev \
-    && curl -fsSL https://bootstrap.pypa.io/get-pip.py | python3.10 \
-    && python3.10 -m pip install --no-cache-dir PyGObject \
     && rm -rf /var/lib/apt/lists/*
+
+ARG NODE_VERSION=20.18.3
+ARG TARGETARCH
+RUN case "${TARGETARCH}" in \
+      amd64) NODE_ARCH=x64 ;; \
+      arm64) NODE_ARCH=arm64 ;; \
+      *) echo "unsupported arch: ${TARGETARCH}" >&2; exit 1 ;; \
+    esac \
+    && curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-${NODE_ARCH}.tar.xz" \
+    | tar -xJ -C /usr/local --strip-components=1 \
+    && node --version \
+    && npm --version
+
+RUN pip install --no-cache-dir PyGObject
 
 WORKDIR /app
