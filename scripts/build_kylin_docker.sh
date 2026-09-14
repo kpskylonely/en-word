@@ -35,10 +35,11 @@ docker run --rm --platform "$PLATFORM" \
   "$IMAGE" \
   bash -lc '
     set -euo pipefail
+    export PYTHON=python3.10
     export PYINSTALLER_CONFIG_DIR=/app/build/pyinstaller-cache
     mkdir -p "$PYINSTALLER_CONFIG_DIR"
 
-    # Mac node_modules are not compatible with Linux containers.
+    # Host node_modules may be for another OS/arch.
     rm -rf node_modules
     npm ci
 

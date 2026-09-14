@@ -1,21 +1,25 @@
-# Build Kylin/Ubuntu .deb packages from macOS via Docker (amd64 or arm64).
-FROM node:20-bookworm-slim
+# Build .deb against glibc 2.31 (Ubuntu 20.04) for Kylin V10 / older ARM distros.
+FROM ubuntu:20.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
+ENV PYTHON=python3.10
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3 \
-    python3-pip \
-    python3-venv \
-    python3-gi \
-    python3-gi-cairo \
-    gir1.2-gtk-3.0 \
-    gir1.2-webkit2-4.0 \
-    libwebkit2gtk-4.0-37 \
-    libgtk-3-0 \
-    libnotify4 \
-    dpkg-dev \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+      ca-certificates curl gnupg software-properties-common \
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && add-apt-repository -y ppa:deadsnakes/ppa \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+      nodejs \
+      python3.10 python3.10-venv python3.10-dev \
+      build-essential pkg-config \
+      libgirepository1.0-dev libcairo2-dev libpango1.0-dev \
+      gir1.2-gtk-3.0 gir1.2-webkit2-4.0 \
+      libwebkit2gtk-4.0-37 libgtk-3-0 libnotify4 dpkg-dev \
+    && curl -fsSL https://bootstrap.pypa.io/get-pip.py | python3.10 \
+    && python3.10 -m pip install --no-cache-dir PyGObject \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
