@@ -1,5 +1,5 @@
-# Build .deb against glibc 2.31 (Ubuntu 20.04 / focal) for Kylin V10.
-FROM python:3.10-focal
+# Build .deb against glibc 2.31 (Debian 11 / bullseye) for Kylin V10.
+FROM python:3.10-slim-bullseye
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1

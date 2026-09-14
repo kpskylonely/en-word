@@ -83,11 +83,11 @@ npm run pack:mac
 
 **方式 A：GitHub Actions 自动打包（推荐）**
 
-推送到 `main` 后，CI 会在 **Ubuntu 20.04 ARM64 容器**（glibc 2.31）里构建 `.deb`，兼容麒麟 V10 等较旧的 ARM 系统，并在 Releases / Artifacts 中提供下载。
+推送到 `main` 后，CI 会在 **Debian 11 (bullseye) ARM64 容器**（glibc 2.31）里构建 `.deb`，兼容麒麟 V10 等较旧的 ARM 系统，并在 Releases / Artifacts 中提供下载。
 
 **方式 B：在 Mac 上通过 Docker 打包**
 
-需要安装 [Docker Desktop](https://www.docker.com/products/docker-desktop/)。容器基线为 **Ubuntu 20.04**（glibc 2.31，适配麒麟）。默认 `linux/amd64`；ARM64 示例：
+需要安装 [Docker Desktop](https://www.docker.com/products/docker-desktop/)。容器基线为 **Debian 11 bullseye**（glibc 2.31，适配麒麟）。默认 `linux/amd64`；ARM64 示例：
 
 ```bash
 ARCH=arm64 npm run pack:kylin:docker
