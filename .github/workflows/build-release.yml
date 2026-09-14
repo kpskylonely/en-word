@@ -16,6 +16,7 @@ jobs:
   build-linux:
     name: Linux (${{ matrix.arch }})
     runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -39,7 +40,7 @@ jobs:
           npm ci
           npm run db:download
 
-      - name: Build .deb in Debian 11 container (glibc 2.31)
+      - name: Build .deb in Ubuntu 20.04 container (glibc 2.31)
         run: bash scripts/build_kylin_docker.sh
 
       - name: Upload .deb artifact

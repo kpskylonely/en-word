@@ -1,21 +1,34 @@
-# Build .deb against glibc 2.31 (Debian 11 / bullseye) for Kylin V10.
-FROM python:3.10-slim-bullseye
+# Build .deb against glibc 2.31 (Ubuntu 20.04) for Kylin V10.
+FROM ubuntu:20.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
-ENV PYTHON=python
+ENV PYTHON=/usr/local/bin/python3.10
+
+ARG PYTHON_VERSION=3.10.14
+ARG NODE_VERSION=20.18.3
+ARG TARGETARCH
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
       ca-certificates curl xz-utils \
       build-essential pkg-config \
-      libgirepository1.0-dev libcairo2-dev libpango1.0-dev \
+      libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev \
+      libffi-dev libgirepository1.0-dev libcairo2-dev libpango1.0-dev \
       gir1.2-gtk-3.0 gir1.2-webkit2-4.0 \
       libwebkit2gtk-4.0-37 libgtk-3-0 libnotify4 dpkg-dev \
     && rm -rf /var/lib/apt/lists/*
 
-ARG NODE_VERSION=20.18.3
-ARG TARGETARCH
+RUN curl -fsSL "https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tar.xz" -o /tmp/python.tar.xz \
+    && tar -xJf /tmp/python.tar.xz -C /tmp \
+    && cd "/tmp/Python-${PYTHON_VERSION}" \
+    && ./configure --prefix=/usr/local --enable-shared --with-system-ffi \
+    && make -j"$(nproc)" \
+    && make install \
+    && ldconfig \
+    && ln -sf /usr/local/bin/python3.10 /usr/local/bin/python \
+    && rm -rf "/tmp/Python-${PYTHON_VERSION}" /tmp/python.tar.xz
+
 RUN case "${TARGETARCH}" in \
       amd64) NODE_ARCH=x64 ;; \
       arm64) NODE_ARCH=arm64 ;; \
@@ -26,6 +39,8 @@ RUN case "${TARGETARCH}" in \
     && node --version \
     && npm --version
 
-RUN pip install --no-cache-dir PyGObject
+RUN python -m ensurepip \
+    && python -m pip install --no-cache-dir --upgrade pip \
+    && python -m pip install --no-cache-dir PyGObject
 
 WORKDIR /app
