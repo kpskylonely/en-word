@@ -22,21 +22,38 @@ if ! command -v docker >/dev/null 2>&1; then
 fi
 
 echo "==> Building Linux ${ARCH} builder image (${PLATFORM})..."
-docker build --platform "$PLATFORM" \
-  -f "$ROOT/packaging/docker/Dockerfile.kylin-build" \
-  -t "$IMAGE" \
-  "$ROOT"
+BUILD_CMD=(docker build --platform "$PLATFORM"
+  -f "$ROOT/packaging/docker/Dockerfile.kylin-build"
+  -t "$IMAGE")
+
+if [[ -n "${DOCKER_BUILDX_CACHE:-}" ]] && docker buildx version >/dev/null 2>&1; then
+  CACHE_DIR="${RUNNER_TEMP:-/tmp}/enword-docker-cache"
+  mkdir -p "$CACHE_DIR"
+  BUILD_CMD=(docker buildx build --platform "$PLATFORM" --load
+    --cache-from "type=local,src=${CACHE_DIR}"
+    --cache-to "type=local,dest=${CACHE_DIR}-new,mode=max"
+    -f "$ROOT/packaging/docker/Dockerfile.kylin-build"
+    -t "$IMAGE")
+fi
+
+"${BUILD_CMD[@]}" "$ROOT"
+
+if [[ -d "${RUNNER_TEMP:-/tmp}/enword-docker-cache-new" ]]; then
+  rm -rf "${RUNNER_TEMP:-/tmp}/enword-docker-cache"
+  mv "${RUNNER_TEMP:-/tmp}/enword-docker-cache-new" "${RUNNER_TEMP:-/tmp}/enword-docker-cache"
+fi
 
 echo "==> Building Kylin/Ubuntu .deb inside Docker (${PLATFORM}, ${ARCH})..."
 docker run --rm --platform "$PLATFORM" \
   -v "$ROOT:/app" \
   -w /app \
   -e ARCH="$ARCH" \
+  -e PYTHON=/opt/python/bin/python3 \
   "$IMAGE" \
   bash -lc '
     set -euo pipefail
-    export PYTHON="${PYTHON:-python3.10}"
-    python3.10 --version
+    export PATH="/opt/python/bin:${PATH}"
+    python3 --version
     export PYINSTALLER_CONFIG_DIR=/app/build/pyinstaller-cache
     mkdir -p "$PYINSTALLER_CONFIG_DIR"
 

@@ -40,7 +40,12 @@ jobs:
           npm ci
           npm run db:download
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Build .deb in Ubuntu 20.04 container (glibc 2.31)
+        env:
+          DOCKER_BUILDX_CACHE: "1"
         run: bash scripts/build_kylin_docker.sh
 
       - name: Upload .deb artifact

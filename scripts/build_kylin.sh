@@ -41,8 +41,8 @@ echo "==> Building frontend..."
 npm run build
 
 echo "==> Using Python: $PY ($("$PY" --version))"
-echo "==> Installing build dependencies..."
-"$PY" -m pip install -q -r requirements-build.txt
+export PYTHON="$PY"
+bash "$ROOT/scripts/install_linux_build_deps.sh"
 
 echo "==> Packaging Linux app..."
 rm -rf "$RELEASE_DIR/EnWord" "$PYI_WORK"
@@ -55,6 +55,9 @@ if [[ ! -x "$RELEASE_DIR/EnWord/EnWord" ]]; then
   echo "Expected binary not found: $RELEASE_DIR/EnWord/EnWord" >&2
   exit 1
 fi
+
+echo "==> Verifying GLIBC compatibility (Kylin V10 <= 2.31)..."
+bash "$ROOT/scripts/verify_glibc.sh" "$RELEASE_DIR/EnWord" "2.31"
 
 echo "==> Building .deb package..."
 rm -rf "$DEB_ROOT"
