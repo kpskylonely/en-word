@@ -36,6 +36,7 @@ docker run --rm --platform "$PLATFORM" \
   bash -lc '
     set -euo pipefail
     export PYTHON="${PYTHON:-python3.10}"
+    python3.10 --version
     export PYINSTALLER_CONFIG_DIR=/app/build/pyinstaller-cache
     mkdir -p "$PYINSTALLER_CONFIG_DIR"
 
